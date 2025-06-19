@@ -114,67 +114,89 @@ def train_random_forest(X_train, X_test, y_train, y_test):
     """Train Random Forest model with MLflow tracking"""
     print("\n🌲 Training Random Forest Model...")
     
-    with mlflow.start_run(run_name="RandomForest_CI", nested=mlflow.active_run() is not None):
-        # Enable MLflow autolog
-        mlflow.sklearn.autolog()
-        
-        # Create and train model
-        rf_model = RandomForestRegressor(
-            n_estimators=100,
-            random_state=42,
-            max_depth=10
-        )
-        
-        # Train model
-        rf_model.fit(X_train, y_train)
-        
-        # Evaluate model
-        metrics, y_pred = evaluate_model(rf_model, X_test, y_test)
-        
-        # Log additional metrics manually
-        mlflow.log_param("model_type", "RandomForestRegressor")
-        mlflow.log_param("dataset_name", "automobile_dataset")
-        mlflow.log_param("training_environment", "GitHub_Actions_CI")
-        
-        # Print results
-        print("📊 Random Forest Results:")
-        print(f"   MSE: {metrics['mse']:.4f}")
-        print(f"   MAE: {metrics['mae']:.4f}")
-        print(f"   R²: {metrics['r2']:.4f}")
-        print(f"   RMSE: {metrics['rmse']:.4f}")
-        
-        return rf_model, metrics
+    # Cek apakah ada active run dari mlflow run
+    if mlflow.active_run() is not None:
+        # Jika ada active run, gunakan nested run
+        with mlflow.start_run(run_name="RandomForest_CI", nested=True):
+            return _train_rf_model(X_train, X_test, y_train, y_test)
+    else:
+        # Jika tidak ada active run, buat run baru
+        with mlflow.start_run(run_name="RandomForest_CI"):
+            return _train_rf_model(X_train, X_test, y_train, y_test)
+
+def _train_rf_model(X_train, X_test, y_train, y_test):
+    """Helper function for training Random Forest"""
+    # Enable MLflow autolog
+    mlflow.sklearn.autolog()
+    
+    # Create and train model
+    rf_model = RandomForestRegressor(
+        n_estimators=100,
+        random_state=42,
+        max_depth=10
+    )
+    
+    # Train model
+    rf_model.fit(X_train, y_train)
+    
+    # Evaluate model
+    metrics, y_pred = evaluate_model(rf_model, X_test, y_test)
+    
+    # Log additional metrics manually
+    mlflow.log_param("model_type", "RandomForestRegressor")
+    mlflow.log_param("dataset_name", "automobile_dataset")
+    mlflow.log_param("training_environment", "GitHub_Actions_CI")
+    
+    # Print results
+    print("📊 Random Forest Results:")
+    print(f"   MSE: {metrics['mse']:.4f}")
+    print(f"   MAE: {metrics['mae']:.4f}")
+    print(f"   R²: {metrics['r2']:.4f}")
+    print(f"   RMSE: {metrics['rmse']:.4f}")
+    
+    return rf_model, metrics
 
 def train_linear_regression(X_train, X_test, y_train, y_test):
     """Train Linear Regression model with MLflow tracking"""
     print("\n📈 Training Linear Regression Model...")
     
-    with mlflow.start_run(run_name="LinearRegression_CI", nested=mlflow.active_run() is not None):
-        # Enable MLflow autolog
-        mlflow.sklearn.autolog()
-        
-        # Create and train model
-        lr_model = LinearRegression()
-        
-        # Train model
-        lr_model.fit(X_train, y_train)
-        
-        # Evaluate model
-        metrics, y_pred = evaluate_model(lr_model, X_test, y_test)
-        
-        # Log additional metrics manually
-        mlflow.log_param("model_type", "LinearRegression")
-        mlflow.log_param("dataset_name", "automobile_dataset")
-        mlflow.log_param("training_environment", "GitHub_Actions_CI")
-        
-        # Print results
-        print("📊 Linear Regression Results:")
-        print(f"   MSE: {metrics['mse']:.4f}")
-        print(f"   MAE: {metrics['mae']:.4f}")
-        print(f"   R²: {metrics['r2']:.4f}")
-        print(f"   RMSE: {metrics['rmse']:.4f}")
-        
-        return lr_model, metrics
+    # Cek apakah ada active run dari mlflow run
+    if mlflow.active_run() is not None:
+        # Jika ada active run, gunakan nested run
+        with mlflow.start_run(run_name="LinearRegression_CI", nested=True):
+            return _train_lr_model(X_train, X_test, y_train, y_test)
+    else:
+        # Jika tidak ada active run, buat run baru
+        with mlflow.start_run(run_name="LinearRegression_CI"):
+            return _train_lr_model(X_train, X_test, y_train, y_test)
+
+def _train_lr_model(X_train, X_test, y_train, y_test):
+    """Helper function for training Linear Regression"""
+    # Enable MLflow autolog
+    mlflow.sklearn.autolog()
+    
+    # Create and train model
+    lr_model = LinearRegression()
+    
+    # Train model
+    lr_model.fit(X_train, y_train)
+    
+    # Evaluate model
+    metrics, y_pred = evaluate_model(lr_model, X_test, y_test)
+    
+    # Log additional metrics manually
+    mlflow.log_param("model_type", "LinearRegression")
+    mlflow.log_param("dataset_name", "automobile_dataset")
+    mlflow.log_param("training_environment", "GitHub_Actions_CI")
+    
+    # Print results
+    print("📊 Linear Regression Results:")
+    print(f"   MSE: {metrics['mse']:.4f}")
+    print(f"   MAE: {metrics['mae']:.4f}")
+    print(f"   R²: {metrics['r2']:.4f}")
+    print(f"   RMSE: {metrics['rmse']:.4f}")
+    
+    return lr_model, metrics
 
 def main():
     """Main function to run the modeling pipeline"""
@@ -188,9 +210,10 @@ def main():
     print("=" * 50)
     print(f"⚙️ Parameters: test_size={args.test_size}, random_state={args.random_state}")
     
-    # Set MLflow tracking URI (local)
-    mlflow.set_tracking_uri("file:./mlruns")
-    mlflow.set_experiment("Auto_Prediction_CI")
+    # Set MLflow tracking URI (local) - hanya jika belum ada active run
+    if mlflow.active_run() is None:
+        mlflow.set_tracking_uri("file:./mlruns")
+        mlflow.set_experiment("Auto_Prediction_CI")
     
     try:
         # Load data
@@ -237,7 +260,7 @@ def main():
         
     except Exception as e:
         print(f"❌ Error occurred: {str(e)}")
-        sys.exit(1)
+        raise e  # Re-raise exception untuk debugging
 
 if __name__ == "__main__":
     main()
