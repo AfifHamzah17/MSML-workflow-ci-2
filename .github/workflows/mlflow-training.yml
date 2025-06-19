@@ -34,11 +34,20 @@ jobs:
         conda activate mlflow-env
         pip install mlflow
     
+    # - name: Run MLflow Project
+    #   shell: bash -l {0}
+    #   run: |
+    #     conda activate mlflow-env
+    #     mlflow run ./
+    #   working-directory: ./MLProject
+    # sudah dicoba namun ga bisa jadi saya tidak dapat menerapkan balik ke mode awal
+
     - name: Run MLflow Project
       shell: bash -l {0}
       run: |
         conda activate mlflow-env
-        mlflow run ./MLProject --env-manager=local
+        cd MLProject
+        python modelling.py
     
     - name: Upload MLflow artifacts
       uses: actions/upload-artifact@v4
@@ -48,7 +57,6 @@ jobs:
         path: |
           MLProject/mlruns/
           MLProject/*.csv
-          MLProject/training_summary.txt
         retention-days: 30
     
     - name: Display training results
@@ -56,7 +64,3 @@ jobs:
       run: |
         echo "✅ Model training completed successfully!"
         echo "📊 Check the artifacts tab for MLflow tracking results"
-        if [ -f "MLProject/training_summary.txt" ]; then
-          echo "📄 Training Summary:"
-          cat MLProject/training_summary.txt
-        fi
