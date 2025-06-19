@@ -114,7 +114,7 @@ def train_random_forest(X_train, X_test, y_train, y_test):
     """Train Random Forest model with MLflow tracking"""
     print("\n🌲 Training Random Forest Model...")
     
-    with mlflow.start_run(run_name="RandomForest_CI"):
+    with mlflow.start_run(run_name="RandomForest_CI", nested=mlflow.active_run() is not None):
         # Enable MLflow autolog
         mlflow.sklearn.autolog()
         
@@ -149,7 +149,7 @@ def train_linear_regression(X_train, X_test, y_train, y_test):
     """Train Linear Regression model with MLflow tracking"""
     print("\n📈 Training Linear Regression Model...")
     
-    with mlflow.start_run(run_name="LinearRegression_CI"):
+    with mlflow.start_run(run_name="LinearRegression_CI", nested=mlflow.active_run() is not None):
         # Enable MLflow autolog
         mlflow.sklearn.autolog()
         
