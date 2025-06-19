@@ -34,11 +34,23 @@ jobs:
         conda activate mlflow-env
         pip install mlflow
     
-    - name: Run MLflow Project
+    # - name: Run MLflow Project
+    #   shell: bash -l {0}
+    #   run: |
+    #     conda activate mlflow-env
+    #     mlflow run ./
+    #   working-directory: ./MLProject
+    - name: Run MLflow Project 
       shell: bash -l {0}
       run: |
         conda activate mlflow-env
-        mlflow run ./MLProject --env-manager=local
+        mlflow run ./MLProject --env-manager=local --no-conda
+    # - name: Run MLflow Project
+    #   shell: bash -l {0}
+    #   run: |
+    #     conda activate mlflow-env
+    #     cd MLProject
+    #     python modelling.py
     
     - name: Upload MLflow artifacts
       uses: actions/upload-artifact@v4
