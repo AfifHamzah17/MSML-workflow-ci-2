@@ -42,7 +42,7 @@ jobs:
         echo "🔍 Verifying project structure..."
         ls -la MLProject/
         echo "📋 MLProject file content:"
-        cat MLProject/MLproject
+        cat MLProject/MLProject
         echo "🐍 Python files:"
         ls -la MLProject/*.py
         echo "📊 Data files:"
