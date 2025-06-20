@@ -33,21 +33,54 @@ jobs:
       run: |
         conda activate mlflow-env
         pip install mlflow
+        echo "✅ MLflow installed successfully"
+        mlflow --version
     
-    # - name: Run MLflow Project
-    #   shell: bash -l {0}
-    #   run: |
-    #     conda activate mlflow-env
-    #     mlflow run ./
-    #   working-directory: ./MLProject
-    # sudah dicoba namun ga bisa jadi saya tidak dapat menerapkan balik ke mode awal
-
+    - name: Verify Project Structure
+      shell: bash -l {0}
+      run: |
+        echo "🔍 Verifying project structure..."
+        ls -la MLProject/
+        echo "📋 MLProject file content:"
+        cat MLProject/MLproject
+        echo "🐍 Python files:"
+        ls -la MLProject/*.py
+        echo "📊 Data files:"
+        ls -la MLProject/*.csv || echo "No CSV files found"
+    
     - name: Run MLflow Project
       shell: bash -l {0}
       run: |
         conda activate mlflow-env
+        echo "🚀 Running MLflow project..."
         cd MLProject
-        python modelling.py
+        
+        # Run using mlflow run command with parameters
+        mlflow run . \
+          --experiment-name "Auto_Prediction_CI" \
+          -P test_size=0.2 \
+          -P random_state=42 \
+          --env-manager=conda
+        
+        echo "✅ MLflow project completed successfully!"
+    
+    - name: Verify MLflow Artifacts
+      shell: bash -l {0}
+      run: |
+        echo "📊 Checking MLflow artifacts..."
+        ls -la MLProject/mlruns/ || echo "❌ No mlruns directory found"
+        if [ -d "MLProject/mlruns" ]; then
+          find MLProject/mlruns -type f -name "*.txt" -o -name "*.json" -o -name "*.yaml" | head -10
+          echo "✅ MLflow artifacts found"
+        fi
+        
+        # Check for training summary
+        if [ -f "MLProject/training_summary.txt" ]; then
+          echo "📄 Training Summary:"
+          cat MLProject/training_summary.txt
+        else
+          echo "❌ Training summary not found"
+        fi
     
     - name: Upload MLflow artifacts
       uses: actions/upload-artifact@v4
@@ -57,6 +90,7 @@ jobs:
         path: |
           MLProject/mlruns/
           MLProject/*.csv
+          MLProject/training_summary.txt
         retention-days: 30
     
     - name: Display training results
@@ -64,3 +98,4 @@ jobs:
       run: |
         echo "✅ Model training completed successfully!"
         echo "📊 Check the artifacts tab for MLflow tracking results"
+        echo "🤖 CI/CD Pipeline executed with proper MLflow run command!"

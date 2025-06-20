@@ -4,10 +4,19 @@ conda_env: conda.yaml
 
 entry_points:
   main:
-    command: "python modelling.py"
+    parameters:
+      test_size: {type: float, default: 0.2}
+      random_state: {type: int, default: 42}
+    command: "python modelling.py --test_size {test_size} --random_state {random_state}"
     
   train:
     parameters:
       test_size: {type: float, default: 0.2}
       random_state: {type: int, default: 42}
     command: "python modelling.py --test_size {test_size} --random_state {random_state}"
+
+  debug:
+    parameters:
+      test_size: {type: float, default: 0.2}
+      random_state: {type: int, default: 42}
+    command: "python modelling.py --test_size {test_size} --random_state {random_state} --verbose"
